@@ -8,3 +8,8 @@ export function getArticles(): Article[] {
   const articles: Article[] = JSON.parse(fileContents);
   return articles;
 }
+
+export function getArticle(id: number): Article | undefined {
+  const articles = getArticles();
+  return articles.find((article) => article.id === id);
+}
