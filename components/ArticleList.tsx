@@ -37,24 +37,24 @@ export default function ArticleList({
 
   return (
     <div>
-      <div className="mb-4">
+      <div className="bg-white mb-4 flex flex-wrap gap-2">
         <button
           onClick={() => handleSort("date")}
-          className="mr-2 px-2 py-1 bg-blue-500 text-white rounded"
+          className="px-4 py-2 bg-[#53b8fd] text-white rounded hover:bg-[#5499f3] transition-colors"
         >
           日付で{sortBy === "date" && sortOrder === "asc" ? "降順" : "昇順"}
           ソート
         </button>
         <button
           onClick={() => handleSort("title")}
-          className="mr-2 px-2 py-1 bg-blue-500 text-white rounded"
+          className="px-4 py-2 bg-[#53b8fd] text-white rounded hover:bg-[#5499f3] transition-colors"
         >
           タイトルで
           {sortBy === "title" && sortOrder === "asc" ? "降順" : "昇順"}ソート
         </button>
         <select
           onChange={(e) => handleFilter(e.target.value)}
-          className="px-2 py-1 border rounded"
+          className="px-4 py-2 bg-white border border-[#905128] rounded text-[#905128]"
         >
           <option value="">カテゴリで絞り込み</option>
           {allLabels.map((label) => (
@@ -68,20 +68,20 @@ export default function ArticleList({
         {articles.map((article) => (
           <li
             key={article.id}
-            className="bg-white shadow rounded-lg p-4 hover:shadow-md transition-shadow"
+            className="bg-[#ffc49b] p-4 rounded-lg shadow hover:bg-[#ffe6bd] hover:shadow-md transition-shadow"
           >
             <Link
               href={`/articles/${article.id}`}
-              className="text-lg text-blue-600 hover:underline"
+              className="text-lg text-[#051113] hover:underline"
             >
               {article.title}
             </Link>
             <p className="text-sm text-gray-600 mt-1">{article.date}</p>
-            <div className="mt-2">
+            <div className="mt-2 flex flex-wrap gap-2">
               {article.labels.map((label) => (
                 <span
                   key={label}
-                  className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+                  className="inline-block bg-[#ffffff] text-[#905128] rounded-full px-3 py-1 text-sm font-semibold"
                 >
                   {label}
                 </span>
@@ -93,3 +93,4 @@ export default function ArticleList({
     </div>
   );
 }
+
