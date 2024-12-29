@@ -10,6 +10,8 @@ export default async function Home() {
         2016年より約3年+それ以降は不定期更新していた
         <br />
         聖書の神様との日々の語らいの過去記事一覧です。
+        <br />
+        ※リンクは全て削除されています。
       </p>
       <ArticleList articles={articles} />
     </main>
