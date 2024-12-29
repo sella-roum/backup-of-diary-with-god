@@ -6,7 +6,9 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-white py-8">
       <div className="container mx-auto px-4">
-        <h1 className="text-4xl font-bold mb-6 text-[#051113]">DIARY WITH GOD 記事一覧</h1>
+        <h1 className="text-4xl font-bold mb-6 text-[#051113]">
+          DIARY WITH GOD 記事一覧
+        </h1>
         <p className="text-xl mb-6 text-[#051113]">
           2016年より約3年+それ以降は不定期更新していた
           <br />
@@ -19,4 +21,3 @@ export default async function Home() {
     </main>
   );
 }
-

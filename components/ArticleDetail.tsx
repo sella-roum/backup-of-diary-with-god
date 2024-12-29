@@ -14,9 +14,11 @@ export default function ArticleDetail({ title, content, date, labels }: ArticleD
       <p className="text-sm text-gray-600 mb-4">{date}</p>
       <div className="mb-4">
         {labels.map(label => (
-          <span key={label} className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">
-            {label}
-          </span>
+          <Link key={label} href={`/?label=${encodeURIComponent(label)}`}>
+            <span className="inline-block bg-[#ffc49b] hover:bg-[#ffe6bd] rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2 cursor-pointer">
+              {label}
+            </span>
+          </Link>
         ))}
       </div>
       <div className="prose">
