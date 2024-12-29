@@ -1,21 +1,30 @@
-import fs from 'fs'
-import path from 'path'
-
 export interface Article {
-  id: number
-  title: string
-  content: string
+  id: number;
+  date: string;
+  labels: string[];
+  title: string;
+  content: string;
 }
 
-export function getArticles(): Article[] {
-  const filePath = path.join(process.cwd(), 'public', 'articles.json')
-  const fileContents = fs.readFileSync(filePath, 'utf8')
-  const articles: Article[] = JSON.parse(fileContents)
-  return articles
+export function sortArticles(
+  articles: Article[],
+  sortBy: "date" | "title",
+  sortOrder: "asc" | "desc"
+): Article[] {
+  return [...articles].sort((a, b) => {
+    let comparison = 0;
+    if (sortBy === "date") {
+      comparison = new Date(b.date).getTime() - new Date(a.date).getTime();
+    } else {
+      comparison = a.title.localeCompare(b.title);
+    }
+    return sortOrder === "asc" ? comparison : -comparison;
+  });
 }
 
-export function getArticle(id: number): Article | undefined {
-  const articles = getArticles()
-  return articles.find(article => article.id === id)
+export function filterArticlesByLabel(
+  articles: Article[],
+  label: string
+): Article[] {
+  return articles.filter((article) => article.labels.includes(label));
 }
-
