@@ -1,37 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Article, sortArticles, filterArticlesByLabel } from "../lib/articles";
 
 interface ArticleListProps {
   articles: Article[];
+  initialFilterLabel?: string;
 }
 
 export default function ArticleList({
   articles: initialArticles,
+  initialFilterLabel = '',
 }: ArticleListProps) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [sortBy, setSortBy] = useState<"date" | "title">("date");
-  const [filterLabel, setFilterLabel] = useState<string>("");
-  const [filteredArticles, setFilteredArticles] =
-    useState<Article[]>(initialArticles);
+  const [filterLabel, setFilterLabel] = useState(initialFilterLabel);
+  const [articles, setArticles] = useState<Article[]>(
+    sortArticles(
+      initialFilterLabel
+        ? filterArticlesByLabel(initialArticles, initialFilterLabel)
+        : initialArticles,
+      sortBy,
+      sortOrder
+    )
+  );
+
+  useEffect(() => {
+    setArticles(
+      sortArticles(
+        filterLabel
+          ? filterArticlesByLabel(initialArticles, filterLabel)
+          : initialArticles,
+        sortBy,
+        sortOrder
+      )
+    );
+  }, [filterLabel, sortBy, sortOrder, initialArticles]);
 
   const handleSort = (newSortBy: "date" | "title") => {
     const newSortOrder =
       newSortBy === sortBy ? (sortOrder === "asc" ? "desc" : "asc") : "desc";
     setSortBy(newSortBy);
     setSortOrder(newSortOrder);
-    setFilteredArticles(
-      sortArticles(filteredArticles, newSortBy, newSortOrder)
-    );
   };
 
   const handleFilter = (label: string) => {
     setFilterLabel(label);
-    setFilteredArticles(
-      label ? filterArticlesByLabel(initialArticles, label) : initialArticles
-    );
   };
 
   const allLabels = Array.from(
@@ -45,7 +60,7 @@ export default function ArticleList({
           onClick={() => handleSort("date")}
           className="px-4 py-2 bg-[#53b8fd] text-white rounded hover:bg-[#5499f3] transition-colors"
         >
-          日付で{sortBy === "date" && sortOrder === "asc" ? "降順" : "昇順"}{" "}
+          日付で{sortBy === "date" && sortOrder === "asc" ? "降順" : "昇順"}
           ソート
         </button>
         <button
@@ -53,12 +68,12 @@ export default function ArticleList({
           className="px-4 py-2 bg-[#53b8fd] text-white rounded hover:bg-[#5499f3] transition-colors"
         >
           タイトルで
-          {sortBy === "title" && sortOrder === "asc" ? "降順" : "昇順"} ソート
+          {sortBy === "title" && sortOrder === "asc" ? "降順" : "昇順"}ソート
         </button>
         <select
+          value={filterLabel}
           onChange={(e) => handleFilter(e.target.value)}
           className="px-4 py-2 bg-white border border-[#905128] rounded text-[#905128]"
-          value={filterLabel}
         >
           <option value="">カテゴリで絞り込み</option>
           {allLabels.map((label) => (
@@ -69,7 +84,7 @@ export default function ArticleList({
         </select>
       </div>
       <ul className="space-y-4">
-        {filteredArticles.map((article) => (
+        {articles.map((article) => (
           <li
             key={article.id}
             className="bg-[#ffc49b] p-4 rounded-lg shadow hover:bg-[#ffe6bd] hover:shadow-md transition-shadow"
@@ -97,3 +112,4 @@ export default function ArticleList({
     </div>
   );
 }
+
