@@ -1,22 +1,25 @@
-import { getArticle } from '../../../lib/server/articles'
-import ArticleDetail from '../../../components/ArticleDetail'
+import { notFound } from "next/navigation";
+import ArticleDetail from "@/components/article-detail";
 
-export default function ArticlePage({ params }: { params: { id: string } }) {
-  const article = getArticle(parseInt(params.id))
+interface ArticlePageProps {
+  params: { id: string };
+}
 
-  if (!article) {
-    return <div className="container mx-auto px-4 py-8">記事が見つかりません</div>
+export default function ArticlePage({ params }: ArticlePageProps) {
+  // paramsをawaitする必要がある場合は以下のようにする
+  // const resolvedParams = await params;
+  // const id = Number.parseInt(resolvedParams.id);
+
+  // 現在のケースでは単純に型を修正
+  const id = Number.parseInt(params.id);
+
+  if (isNaN(id)) {
+    notFound();
   }
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <ArticleDetail 
-        title={article.title} 
-        content={article.content} 
-        date={article.date} 
-        labels={article.labels} 
-      />
-    </main>
-  )
+    <div className="container mx-auto px-4 py-8">
+      <ArticleDetail id={id} />
+    </div>
+  );
 }
-
