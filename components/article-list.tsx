@@ -22,6 +22,26 @@ export default function ArticleList() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
   const [allLabels, setAllLabels] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [articlesPerPage] = useState(100);
+
+  // タグ一覧を取得（マウント時に一度だけ実行）
+  useEffect(() => {
+    const fetchAllTags = async () => {
+      try {
+        const response = await fetch("/api/tags");
+        if (!response.ok) {
+          throw new Error("Failed to fetch tags");
+        }
+        const tagData = await response.json();
+        setAllLabels(tagData);
+      } catch (error) {
+        console.error("タグの取得に失敗しました:", error);
+      }
+    };
+    fetchAllTags();
+  }, []);
 
   // 記事一覧を取得
   const fetchArticles = async (search?: string, label?: string) => {
@@ -32,6 +52,8 @@ export default function ArticleList() {
 
       if (search) params.append("search", search);
       if (label) params.append("label", label);
+      params.append("page", currentPage.toString());
+      params.append("limit", articlesPerPage.toString());
 
       if (params.toString()) {
         url += `?${params.toString()}`;
@@ -39,16 +61,8 @@ export default function ArticleList() {
 
       const response = await fetch(url);
       const data = await response.json();
-      setArticles(data);
-
-      // すべてのラベルを抽出
-      if (!label && !search) {
-        const labels = new Set<string>();
-        data.forEach((article: Article) => {
-          article.labels.forEach((label) => labels.add(label));
-        });
-        setAllLabels(Array.from(labels).sort());
-      }
+      setArticles(data.articles || []);
+      setTotalCount(data.totalCount || 0);
     } catch (error) {
       console.error("記事の取得に失敗しました:", error);
     } finally {
@@ -57,11 +71,12 @@ export default function ArticleList() {
   };
 
   useEffect(() => {
-    fetchArticles();
-  }, []);
+    fetchArticles(searchKeyword, selectedLabel || undefined);
+  }, [searchKeyword, selectedLabel, currentPage]);
 
   // 検索処理
   const handleSearch = () => {
+    setCurrentPage(1); // 検索時はページを1に戻す
     fetchArticles(searchKeyword, selectedLabel || undefined);
   };
 
@@ -69,6 +84,7 @@ export default function ArticleList() {
   const handleLabelSelect = (label: string) => {
     const newLabel = selectedLabel === label ? null : label;
     setSelectedLabel(newLabel);
+    setCurrentPage(1); // ラベル変更時はページを1に戻す
     fetchArticles(searchKeyword, newLabel || undefined);
   };
 
@@ -76,6 +92,9 @@ export default function ArticleList() {
   const handleArticleClick = (id: string) => {
     router.push(`/articles/${id}`);
   };
+
+  // 総ページ数を計算
+  const totalPages = Math.ceil(totalCount / articlesPerPage);
 
   return (
     <div className="space-y-8">
@@ -204,6 +223,30 @@ export default function ArticleList() {
           <p className="text-sm text-muted-foreground">
             検索条件を変更するか、フィルターを解除してください
           </p>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="mt-8 flex justify-center items-center gap-4">
+          <Button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            variant="outline"
+          >
+            前へ
+          </Button>
+          <span>
+            {currentPage} / {totalPages} ページ
+          </span>
+          <Button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+            variant="outline"
+          >
+            次へ
+          </Button>
         </div>
       )}
     </div>

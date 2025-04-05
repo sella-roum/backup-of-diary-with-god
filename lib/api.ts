@@ -1,7 +1,7 @@
 import { client } from "@/lib/microcms";
 import type { MicroCMSQueries } from "microcms-js-sdk";
 import type { Blog, BlogResponse } from "@/types/blog";
-import type { Tag, TagResponse } from "@/types/tag";
+import type { Tag } from "@/types/tag";
 
 // ブログ記事一覧を取得
 export const getAllBlogs = async (
@@ -61,19 +61,17 @@ export const getBlogById = async (
   }
 };
 
-// タグ一覧を取得
-export const getAllTags = async (
-  queries?: MicroCMSQueries
-): Promise<TagResponse> => {
+// タグ一覧を取得（修正：全件取得対応）
+export const getAllTags = async (queries?: MicroCMSQueries): Promise<Tag[]> => {
   try {
-    const data = await client.getList<Tag>({
+    const allTags = await client.getAllContents<Tag>({
       endpoint: "tags",
-      queries: { limit: 100, ...queries },
+      queries: { fields: "id,name", ...queries },
     });
-    return data;
+    return allTags;
   } catch (error) {
     console.error("Error fetching all tags:", error);
-    return { contents: [], totalCount: 0, limit: 0, offset: 0 };
+    return [];
   }
 };
 
