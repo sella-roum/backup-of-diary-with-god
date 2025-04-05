@@ -1,25 +1,33 @@
-import { notFound } from "next/navigation";
 import ArticleDetail from "@/components/article-detail";
+import { getAllBlogs } from "@/lib/api";
 
 interface ArticlePageProps {
   params: { id: string };
 }
 
-export default function ArticlePage({ params }: ArticlePageProps) {
-  // paramsをawaitする必要がある場合は以下のようにする
-  // const resolvedParams = await params;
-  // const id = Number.parseInt(resolvedParams.id);
+// export async function generateStaticParams() {
+//   // microCMSからすべての記事IDを取得
+//   try {
+//     const { contents } = await getAllBlogs({ fields: "id", limit: 100 });
+//     return contents.map((blog) => ({
+//       id: blog.id,
+//     }));
+//   } catch (error) {
+//     console.error("Error in generateStaticParams:", error);
+//     return [];
+//   }
+// }
 
-  // 現在のケースでは単純に型を修正
-  const id = Number.parseInt(params.id);
+export default async function ArticlePage({ params }: ArticlePageProps) {
+  try {
+    const id = params.id;
 
-  if (isNaN(id)) {
-    notFound();
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <ArticleDetail id={id} />
+      </div>
+    );
+  } catch (e) {
+    return null;
   }
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <ArticleDetail id={id} />
-    </div>
-  );
 }

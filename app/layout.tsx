@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "DIARY WITH GOD - 神様との日記",
   description: "日々の生活の中で神様との対話を記録したブログです。",
-    generator: 'v0.dev'
+  generator: "v0.dev",
 };
 
 export default function RootLayout({
@@ -38,6 +38,4 @@ export default function RootLayout({
   );
 }
 
-
-
-import './globals.css'
+import "./globals.css";

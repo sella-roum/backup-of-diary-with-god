@@ -1,81 +1,81 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Search, Tag, X, ArrowRight, Calendar } from "lucide-react"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Search, Tag, X, ArrowRight, Calendar } from "lucide-react";
 
 type Article = {
-  id: number
-  date: string
-  labels: string[]
-  title: string
-}
+  id: string;
+  date: string;
+  labels: string[];
+  title: string;
+};
 
 export default function ArticleList() {
-  const router = useRouter()
-  const [articles, setArticles] = useState<Article[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchKeyword, setSearchKeyword] = useState("")
-  const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
-  const [allLabels, setAllLabels] = useState<string[]>([])
+  const router = useRouter();
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
+  const [allLabels, setAllLabels] = useState<string[]>([]);
 
   // 記事一覧を取得
   const fetchArticles = async (search?: string, label?: string) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      let url = "/api/articles"
-      const params = new URLSearchParams()
+      let url = "/api/articles";
+      const params = new URLSearchParams();
 
-      if (search) params.append("search", search)
-      if (label) params.append("label", label)
+      if (search) params.append("search", search);
+      if (label) params.append("label", label);
 
       if (params.toString()) {
-        url += `?${params.toString()}`
+        url += `?${params.toString()}`;
       }
 
-      const response = await fetch(url)
-      const data = await response.json()
-      setArticles(data)
+      const response = await fetch(url);
+      const data = await response.json();
+      setArticles(data);
 
       // すべてのラベルを抽出
       if (!label && !search) {
-        const labels = new Set<string>()
+        const labels = new Set<string>();
         data.forEach((article: Article) => {
-          article.labels.forEach((label) => labels.add(label))
-        })
-        setAllLabels(Array.from(labels).sort())
+          article.labels.forEach((label) => labels.add(label));
+        });
+        setAllLabels(Array.from(labels).sort());
       }
     } catch (error) {
-      console.error("記事の取得に失敗しました:", error)
+      console.error("記事の取得に失敗しました:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchArticles()
-  }, [])
+    fetchArticles();
+  }, []);
 
   // 検索処理
   const handleSearch = () => {
-    fetchArticles(searchKeyword, selectedLabel || undefined)
-  }
+    fetchArticles(searchKeyword, selectedLabel || undefined);
+  };
 
   // ラベル選択処理
   const handleLabelSelect = (label: string) => {
-    const newLabel = selectedLabel === label ? null : label
-    setSelectedLabel(newLabel)
-    fetchArticles(searchKeyword, newLabel || undefined)
-  }
+    const newLabel = selectedLabel === label ? null : label;
+    setSelectedLabel(newLabel);
+    fetchArticles(searchKeyword, newLabel || undefined);
+  };
 
   // 記事詳細ページへ遷移
-  const handleArticleClick = (id: number) => {
-    router.push(`/articles/${id}`)
-  }
+  const handleArticleClick = (id: string) => {
+    router.push(`/articles/${id}`);
+  };
 
   return (
     <div className="space-y-8">
@@ -103,7 +103,9 @@ export default function ArticleList() {
         {allLabels.length > 0 && (
           <div className="flex flex-wrap gap-2 items-center justify-center">
             <Tag className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground mr-1">カテゴリー:</span>
+            <span className="text-sm text-muted-foreground mr-1">
+              カテゴリー:
+            </span>
             {allLabels.map((label) => (
               <Badge
                 key={label}
@@ -120,9 +122,9 @@ export default function ArticleList() {
                   <X
                     className="ml-1 h-3 w-3 cursor-pointer"
                     onClick={(e) => {
-                      e.stopPropagation()
-                      setSelectedLabel(null)
-                      fetchArticles(searchKeyword)
+                      e.stopPropagation();
+                      setSelectedLabel(null);
+                      fetchArticles(searchKeyword);
                     }}
                   />
                 )}
@@ -159,10 +161,16 @@ export default function ArticleList() {
               onClick={() => handleArticleClick(article.id)}
             >
               <CardContent className="p-6">
-                <h3 className="text-xl font-medium mb-3 transition-colors duration-200">{article.title}</h3>
+                <h3 className="text-xl font-medium mb-3 transition-colors duration-200">
+                  {article.title}
+                </h3>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {article.labels.slice(0, 3).map((label, index) => (
-                    <Badge key={index} variant="secondary" className="article-card-badge text-xs">
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="article-card-badge text-xs"
+                    >
                       {label}
                     </Badge>
                   ))}
@@ -179,7 +187,7 @@ export default function ArticleList() {
               </CardContent>
               <CardFooter className="px-6 pb-6 pt-0">
                 <Button
-                  variant="ghost"
+                  variant="link"
                   size="sm"
                   className="ml-auto flex items-center gap-1 text-sm group hover:text-primary"
                 >
@@ -193,10 +201,11 @@ export default function ArticleList() {
       ) : (
         <div className="text-center py-16 border rounded-lg bg-muted/20">
           <p className="text-xl font-medium mb-2">記事が見つかりませんでした</p>
-          <p className="text-sm text-muted-foreground">検索条件を変更するか、フィルターを解除してください</p>
+          <p className="text-sm text-muted-foreground">
+            検索条件を変更するか、フィルターを解除してください
+          </p>
         </div>
       )}
     </div>
-  )
+  );
 }
-

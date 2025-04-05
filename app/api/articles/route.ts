@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import articlesData from "@/data/articles.json";
+import {
+  getAllBlogs,
+  getBlogById,
+  getAllTags,
+  getBlogsByTagId,
+} from "@/lib/api";
 
 export async function GET(request: Request) {
   // URLからクエリパラメータを取得
@@ -7,61 +12,93 @@ export async function GET(request: Request) {
   const id = searchParams.get("id");
   const search = searchParams.get("search");
   const label = searchParams.get("label");
+  const page = searchParams.get("page")
+    ? Number.parseInt(searchParams.get("page") as string)
+    : 1;
+  const limit = searchParams.get("limit")
+    ? Number.parseInt(searchParams.get("limit") as string)
+    : 10;
+  const offset = (page - 1) * limit;
 
-  // 記事データをコピー
-  let articles = [...articlesData];
-
-  // IDが指定されている場合は、該当する記事のみを返す
-  if (id) {
-    const article = articles.find(
-      (article) => article.id === Number.parseInt(id)
-    );
-    if (!article) {
-      return NextResponse.json(
-        { error: "記事が見つかりません" },
-        { status: 404 }
-      );
+  try {
+    // IDが指定されている場合は、該当する記事のみを返す
+    if (id) {
+      const article = await getBlogById(id);
+      if (!article) {
+        return NextResponse.json(
+          { error: "記事が見つかりません" },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json(article);
     }
-    return NextResponse.json(article);
-  }
 
-  // 検索キーワードが指定されている場合
-  if (search) {
-    const searchLower = search.toLowerCase();
-    articles = articles.filter(
-      (article) =>
-        article.title.toLowerCase().includes(searchLower) ||
-        article.content.toLowerCase().includes(searchLower)
+    // 検索クエリの構築
+    const queries: any = {
+      limit,
+      offset,
+    };
+
+    // 検索キーワードが指定されている場合
+    if (search) {
+      queries.q = search;
+    }
+
+    // ラベル（タグ）が指定されている場合
+    if (label) {
+      // まずタグのスラッグからタグIDを取得
+      const tags = await getAllTags({
+        filters: `name[equals]${label}`,
+      });
+
+      if (tags.contents.length > 0) {
+        const tagId = tags.contents[0].id;
+        // タグIDを使って記事を取得
+        const taggedArticles = await getBlogsByTagId(tagId, queries);
+
+        // 記事リストを返す（コンテンツは省略）
+        const articlesWithoutContent = taggedArticles.contents.map(
+          ({ id, title, tags, publishedAt }) => ({
+            id,
+            date: publishedAt
+              ? new Date(publishedAt)
+                  .toISOString()
+                  .split("T")[0]
+                  .replace(/-/g, ".")
+              : "",
+            labels: tags ? tags.map((tag) => tag.name) : [],
+            title,
+          })
+        );
+
+        return NextResponse.json(articlesWithoutContent);
+      }
+
+      // タグが見つからない場合は空の配列を返す
+      return NextResponse.json([]);
+    }
+
+    // 通常の記事一覧取得
+    const articles = await getAllBlogs(queries);
+
+    // 記事リストを返す（コンテンツは省略）
+    const articlesWithoutContent = articles.contents.map(
+      ({ id, title, tags, publishedAt }) => ({
+        id,
+        date: publishedAt
+          ? new Date(publishedAt).toISOString().split("T")[0].replace(/-/g, ".")
+          : "",
+        labels: tags ? tags.map((tag) => tag.name) : [],
+        title,
+      })
+    );
+
+    return NextResponse.json(articlesWithoutContent);
+  } catch (error) {
+    console.error("API Error:", error);
+    return NextResponse.json(
+      { error: "サーバーエラーが発生しました" },
+      { status: 500 }
     );
   }
-
-  // ラベルが指定されている場合
-  if (label) {
-    articles = articles.filter((article) =>
-      article.labels.some(
-        (l: string) => l.toLowerCase() === label.toLowerCase()
-      )
-    );
-  }
-
-  // 日付の降順でソート
-  articles.sort((a, b) => {
-    const dateA = new Date(a.date.split(".").join("-"));
-    const dateB = new Date(b.date.split(".").join("-"));
-    return dateB.getTime() - dateA.getTime();
-  });
-
-  // 記事リストを返す（コンテンツは省略）
-  const articlesWithoutContent = articles.map(
-    ({ id, date, labels, title }) => ({
-      id,
-      date,
-      labels,
-      title,
-      // contentは含めない
-    })
-  );
-
-  return NextResponse.json(articlesWithoutContent);
 }
-
